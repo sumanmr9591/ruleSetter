@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const EditModalComponent = ( props ) => {
 
@@ -11,6 +13,14 @@ const EditModalComponent = ( props ) => {
   const [valueTwoField, setValueTwoField] = useState( props.currentRule.rules.Rule2.value );
   const [operatorTwoField, setOperatorTwoField] = useState();
   const [mainOperatorField, setMainOperatorField] = useState();
+  const [isValid, setIsValid] = useState( false );
+
+  useEffect( () => {
+    if ( valueOneField !== '' && valueTwoField !== '' ) {
+      setIsValid( true );
+    }
+
+  }, [valueOneField, valueTwoField] )
 
   const ruleOptions = [
     { value: 'Rental Amount', label: 'Rental Amount' },
@@ -65,29 +75,52 @@ const EditModalComponent = ( props ) => {
   // }
 
   const submitRules = () => {
-    debugger;
-    let payload = {
-      "rules": {
-        "Rule1": {
-          "rule": ruleOneField ? ruleOneField : props.currentRule.rules.Rule1.rule,
-          "operator": operatorOneField ? operatorOneField : props.currentRule.rules.Rule1.operator,
-          "value": valueOneField
-        },
-        "operator1": mainOperatorField ? mainOperatorField : props.currentRule.rules.operator1,
-        "Rule2": {
-          "rule": ruleTwoField ? ruleTwoField : props.currentRule.rules.Rule2.rule,
-          "operator": operatorTwoField ? operatorTwoField : props.currentRule.rules.Rule2.operator,
-          "value": valueTwoField
+    if ( isValid ) {
+      let payload = {
+        "rules": {
+          "Rule1": {
+            "rule": ruleOneField ? ruleOneField : props.currentRule.rules.Rule1.rule,
+            "operator": operatorOneField ? operatorOneField : props.currentRule.rules.Rule1.operator,
+            "value": valueOneField
+          },
+          "operator1": mainOperatorField ? mainOperatorField : props.currentRule.rules.operator1,
+          "Rule2": {
+            "rule": ruleTwoField ? ruleTwoField : props.currentRule.rules.Rule2.rule,
+            "operator": operatorTwoField ? operatorTwoField : props.currentRule.rules.Rule2.operator,
+            "value": valueTwoField
+          }
         }
       }
-    }
-    axios.put( `/api/rules/${ props.currentRule._id }`, payload )
-      .then( ( res ) => {
-        props.closeEditModal();
-        props.ruleCreated();
+      axios.put( `/api/rules/${ props.currentRule._id }`, payload )
+        .then( ( res ) => {
+          props.closeEditModal();
+          props.ruleCreated();
+        } );
+    } else {
+      toast.error( 'Please Define Every Rule!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       } );
+    }
+
   }
   return ( <div className="modal-mask">
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    ></ToastContainer>
     <div className="modal-container">
       <div className="modal-header">Edit Rule</div>
       <span className="modal-close" onClick={props.closeEditModal} >×</span >

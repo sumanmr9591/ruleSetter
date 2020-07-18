@@ -1,6 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ModalWrapperComponent = ( props ) => {
 
@@ -11,6 +13,14 @@ const ModalWrapperComponent = ( props ) => {
   const [valueTwoField, setValueTwoField] = useState();
   const [operatorTwoField, setOperatorTwoField] = useState();
   const [mainOperatorField, setMainOperatorField] = useState();
+  const [isValid, setIsValid] = useState( false );
+
+  useEffect( () => {
+    if ( ruleOneField && valueOneField && operatorOneField && ruleTwoField && valueTwoField && mainOperatorField ) {
+      setIsValid( true );
+    }
+
+  }, [ruleOneField, valueOneField, operatorOneField, ruleTwoField, valueTwoField, mainOperatorField] )
 
   const ruleOptions = [
     { value: 'Rental Amount', label: 'Rental Amount' },
@@ -60,30 +70,55 @@ const ModalWrapperComponent = ( props ) => {
   const mainOperatorRef = useRef();
 
   const submitRules = () => {
-    debugger;
-    let payload = {
-      "rules": {
-        "Rule1": {
-          "rule": ruleOneField,
-          "operator": operatorOneField,
-          "value": valueOneField
-        },
-        "operator1": mainOperatorField,
-        "Rule2": {
-          "rule": ruleTwoField,
-          "operator": operatorTwoField,
-          "value": valueTwoField
+    if ( isValid ) {
+      let payload = {
+        "rules": {
+          "Rule1": {
+            "rule": ruleOneField,
+            "operator": operatorOneField,
+            "value": valueOneField
+          },
+          "operator1": mainOperatorField,
+          "Rule2": {
+            "rule": ruleTwoField,
+            "operator": operatorTwoField,
+            "value": valueTwoField
+          }
         }
       }
-    }
-    axios.post( '/api/rules', payload )
-      .then( ( res ) => {
-        props.closeCreateModal();
-        props.ruleCreated();
+      axios.post( '/api/rules', payload )
+        .then( ( res ) => {
+          props.closeCreateModal();
+          props.ruleCreated();
+        } );
+    } else {
+
+      toast.error( 'Please Define Every Rule!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       } );
+
+    }
+
   }
 
   return ( <div className="modal-mask">
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    ></ToastContainer>
     <div className="modal-container">
       <div className="modal-header">Set New Rules</div>
       <span className="modal-close" onClick={props.closeCreateModal} >×</span >
