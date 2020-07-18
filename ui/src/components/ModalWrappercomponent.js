@@ -97,7 +97,6 @@ const ModalWrapperComponent = ( props ) => {
     }
     axios.post( '/api/rules', payload )
       .then( ( res ) => {
-        console.log( res );
         props.closeCreateModal();
         props.ruleCreated();
       } );

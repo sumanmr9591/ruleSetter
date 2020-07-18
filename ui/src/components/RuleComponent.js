@@ -27,6 +27,24 @@ const RuleComponent = ( props ) => {
     } );
   }
 
+  const deleteRule = ( rule ) => {
+    let id = rule._id
+    axios.delete( `/api/rules/${ id }` )
+      .then( ( rule ) => {
+        let temp = rules.filter( ( rule ) => rule._id !== id );
+        setRules( temp );
+      } )
+    toast.error( 'Rule deleted successfully', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    } );
+  }
+
 
   const closeCreateModal = () => {
     setCreateModal( false );
@@ -53,7 +71,15 @@ const RuleComponent = ( props ) => {
     {rules.length > 0 &&
       rules.map( ( rule, index ) => {
         return ( <div key={index} className="ruleContainer">
-          <h4>Rule number {index + 1}</h4>
+          <div style={{ position: 'relative' }}>
+            <h4>Rule number {index + 1}</h4>
+            <div className="actionContainer">
+              <button className="editBtn">Edit</button>
+              <div className="horBar"></div>
+              <button className="deleteBtn" onClick={() => deleteRule( rule )}>Delete</button>
+            </div>
+          </div>
+
           <div className="subRuleContainer">
             <div className="flex">
               <p>{rule.rules.Rule1.rule}</p>
