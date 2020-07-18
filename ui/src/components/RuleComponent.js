@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import ModalWrapperComponent from './ModalWrappercomponent'
+import ModalWrapperComponent from './ModalWrappercomponent';
+import EditModalComponent from './EditModalComponent';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,15 +9,38 @@ import 'react-toastify/dist/ReactToastify.css';
 const RuleComponent = ( props ) => {
   const [rules, setRules] = useState( [] );
   const [createModal, setCreateModal] = useState( false );
+  const [editModal, setEditModal] = useState( false );
+  const [currentRule, setCurrentRule] = useState( {} )
   useEffect( () => {
     axios.get( '/api/rules' )
       .then( ( res ) => {
         setRules( res.data );
       } );
   } );
+
+  const editRule = ( rule ) => {
+    debugger;
+    setCurrentRule( rule );
+    setEditModal( true );
+  }
+  const closeEditModal = () => {
+    setEditModal( false );
+  }
   const getRules = () => {
 
     toast.info( 'New Rule Created', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    } );
+  }
+
+  const updateRules = () => {
+    toast.info( 'Rule updated successfully!', {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -68,13 +92,16 @@ const RuleComponent = ( props ) => {
 
       </ModalWrapperComponent>
     }
+    {
+      editModal && <EditModalComponent ruleCreated={updateRules} closeEditModal={closeEditModal} currentRule={currentRule}></EditModalComponent>
+    }
     {rules.length > 0 &&
       rules.map( ( rule, index ) => {
         return ( <div key={index} className="ruleContainer">
           <div style={{ position: 'relative' }}>
             <h4>Rule number {index + 1}</h4>
             <div className="actionContainer">
-              <button className="editBtn">Edit</button>
+              <button className="editBtn" onClick={() => editRule( rule )}>Edit</button>
               <div className="horBar"></div>
               <button className="deleteBtn" onClick={() => deleteRule( rule )}>Delete</button>
             </div>

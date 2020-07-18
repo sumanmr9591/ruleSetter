@@ -125,8 +125,9 @@ body {
 }
 
 .actionContainer button:hover {
-  font-weight: bold;  
+  font-weight: bold;
 }
+
 @media only screen and (max-width: 600px) {
   .modal-container {
     top: 15%;
@@ -195,6 +196,7 @@ body {
   align-items: center;
   width: 100%;
   flex-flow: row;
+  justify-content: center;
 }
 
 .flexCreate {

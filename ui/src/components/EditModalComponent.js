@@ -1,14 +1,14 @@
-import React, { useRef, useState } from 'react';
-import Select from 'react-select';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import Select from 'react-select';
 
-const ModalWrapperComponent = ( props ) => {
+const EditModalComponent = ( props ) => {
 
   const [ruleOneField, setRuleOneField] = useState();
-  const [valueOneField, setValueOneField] = useState();
+  const [valueOneField, setValueOneField] = useState( props.currentRule.rules.Rule1.value );
   const [operatorOneField, setOperatorOneField] = useState();
   const [ruleTwoField, setRuleTwoField] = useState();
-  const [valueTwoField, setValueTwoField] = useState();
+  const [valueTwoField, setValueTwoField] = useState( props.currentRule.rules.Rule2.value );
   const [operatorTwoField, setOperatorTwoField] = useState();
   const [mainOperatorField, setMainOperatorField] = useState();
 
@@ -16,7 +16,6 @@ const ModalWrapperComponent = ( props ) => {
     { value: 'Rental Amount', label: 'Rental Amount' },
     { value: 'Customer Age', label: 'Customer Age' }
   ];
-
   const operatorOptions = [
     { value: '>', label: '>' },
     { value: '<', label: '<' },
@@ -59,44 +58,61 @@ const ModalWrapperComponent = ( props ) => {
   const operatorTwoRef = useRef();
   const mainOperatorRef = useRef();
 
+  // const setDefaultValueRuleOne = () => {
+  //   return ruleOptions.filter( ( option ) => {
+  //     option.value === props.currentRule.rules.Rule1.value;
+  //   } )
+  // }
+
   const submitRules = () => {
     debugger;
     let payload = {
       "rules": {
         "Rule1": {
-          "rule": ruleOneField,
-          "operator": operatorOneField,
+          "rule": ruleOneField ? ruleOneField : props.currentRule.rules.Rule1.rule,
+          "operator": operatorOneField ? operatorOneField : props.currentRule.rules.Rule1.operator,
           "value": valueOneField
         },
-        "operator1": mainOperatorField,
+        "operator1": mainOperatorField ? mainOperatorField : props.currentRule.rules.operator1,
         "Rule2": {
-          "rule": ruleTwoField,
-          "operator": operatorTwoField,
+          "rule": ruleTwoField ? ruleTwoField : props.currentRule.rules.Rule2.rule,
+          "operator": operatorTwoField ? operatorTwoField : props.currentRule.rules.Rule2.operator,
           "value": valueTwoField
         }
       }
     }
-    axios.post( '/api/rules', payload )
+    axios.put( `/api/rules/${ props.currentRule._id }`, payload )
       .then( ( res ) => {
-        props.closeCreateModal();
+        props.closeEditModal();
         props.ruleCreated();
       } );
   }
-
   return ( <div className="modal-mask">
     <div className="modal-container">
-      <div className="modal-header">Set New Rules</div>
-      <span className="modal-close" onClick={props.closeCreateModal} >×</span >
+      <div className="modal-header">Edit Rule</div>
+      <span className="modal-close" onClick={props.closeEditModal} >×</span >
       <div style={{ backgroundColor: '#ffffff', height: '100%', width: '100%' }}>
 
         <div className="flexCreate">
           <div className="createModalFields">
             <p className="ruleHeader">Rule 1</p>
-            <Select ref={ruleOneRef} onChange={ruleOneSelection} options={ruleOptions} />
+            <Select ref={ruleOneRef}
+              defaultValue={
+                ruleOptions.filter( rule => rule.value === props.currentRule.rules.Rule1.rule )
+                  ? ruleOptions.filter( rule => rule.value === props.currentRule.rules.Rule1.rule ) :
+                  'Select Rule'
+              }
+              onChange={ruleOneSelection} options={ruleOptions} />
           </div>
           <div className="createModalFields">
             <p className="operatorHeader">Operator 1</p>
-            <Select ref={operatorOneRef} options={operatorOptions} onChange={operatorOneSelection} />
+            <Select
+              defaultValue={
+                operatorOptions.filter( rule => rule.value === props.currentRule.rules.Rule1.operator )
+                  ? operatorOptions.filter( rule => rule.value === props.currentRule.rules.Rule1.operator ) :
+                  'Select Operator'
+              }
+              ref={operatorOneRef} options={operatorOptions} onChange={operatorOneSelection} />
           </div>
           <div className="createModalFields">
             <p className="ruleHeader">Value 1</p>
@@ -107,18 +123,36 @@ const ModalWrapperComponent = ( props ) => {
         <div className="flexCreate" style={{ justifyContent: 'center' }}>
           <div className="createModalFields" style={{ textAlign: 'center' }}>
             <p className="operatorHeader">Rules Combine Operator</p>
-            <Select ref={mainOperatorRef} options={mainOperatorOptions} onChange={mainOperatorSelection} />
+            <Select ref={mainOperatorRef}
+              defaultValue={
+                mainOperatorOptions.filter( rule => rule.value === props.currentRule.rules.operator1 )
+                  ? mainOperatorOptions.filter( rule => rule.value === props.currentRule.rules.operator1 ) :
+                  'Select Rule'
+              }
+              options={mainOperatorOptions} onChange={mainOperatorSelection} />
           </div>
         </div>
 
         <div className="flexCreate">
           <div className="createModalFields">
             <p className="ruleHeader">Rule 2</p>
-            <Select ref={ruleTwoRef} options={ruleOptions} onChange={ruleTwoSelection} />
+            <Select ref={ruleTwoRef}
+              defaultValue={
+                ruleOptions.filter( rule => rule.value === props.currentRule.rules.Rule2.rule )
+                  ? ruleOptions.filter( rule => rule.value === props.currentRule.rules.Rule2.rule ) :
+                  'Select Rule'
+              }
+              options={ruleOptions} onChange={ruleTwoSelection} />
           </div>
           <div className="createModalFields">
             <p className="operatorHeader">Operator 2</p>
-            <Select ref={operatorTwoRef} options={operatorOptions} onChange={operatorTwoSelection} />
+            <Select ref={operatorTwoRef}
+              defaultValue={
+                operatorOptions.filter( rule => rule.value === props.currentRule.rules.Rule2.operator )
+                  ? operatorOptions.filter( rule => rule.value === props.currentRule.rules.Rule2.operator ) :
+                  'Select Operator'
+              }
+              options={operatorOptions} onChange={operatorTwoSelection} />
           </div>
           <div className="createModalFields">
             <p className="ruleHeader">Value 2</p>
@@ -127,7 +161,7 @@ const ModalWrapperComponent = ( props ) => {
         </div>
         <div className="flexCreate" style={{ justifyContent: 'center' }}>
           <div className="createModalFields" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button className="btnCreate" onClick={submitRules}> Create Rule</button>
+            <button className="btnCreate" onClick={submitRules}> Update Rule</button>
           </div>
         </div>
 
@@ -135,5 +169,4 @@ const ModalWrapperComponent = ( props ) => {
     </div >
   </div > )
 }
-
-export default ModalWrapperComponent;
+export default EditModalComponent;
